@@ -29,6 +29,11 @@ function get_title($title) {
     $api_url = "http://localhost:5000/recommendations?title=" . urlencode($title);
     $response = file_get_contents($api_url);
     $result = json_decode($response, true);
+    if (empty($result)) {
+        return false;
+    } else {
+        return $result;
+    }
     return $result;
 }
 ?>
