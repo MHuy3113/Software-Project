@@ -2,7 +2,6 @@
 session_start();
 include 'db_connection.php';
 include 'C:/Users/Anbewwwwwwwwwwwwww/Desktop/api_tmdb.php';
-$scriptPath = 'C:/Users/Anbewwwwwwwwwwwwww/Desktop/movie_recommend.py';
 
 if (isset($_POST['noidung'])) {
     $keyword = $_POST['noidung'];
@@ -143,24 +142,32 @@ if (isset($_POST['noidung'])) {
     <div class="recommended-content">
         <div class="movie-grid">
             <?php
-            $lst_title = get_title($keyword);
-            foreach ($lst_title as $item) {
-                $sql = "SELECT * FROM tmdb_5000_movies WHERE (title LIKE '%$item%' OR original_title LIKE '%$item%')";
-                $result = $connection->query($sql);
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        $movie_id = $row['id'];
-                        $poster_url = get_movie_image_url($movie_id); // Gọi hàm từ file api_tmdb.php để lấy URL hình ảnh
-                        echo '
-                        <div class="movie-box">
-                            <img src="' . $poster_url . '" alt="" class="movie-box-img">
-                            <div class="box-text">
-                                <h2 class="movie-title">' . $row['title'] . '</h2>
-                                <a href="chitietphim.php?id=' . $row['id'] . '&user_id=' . $_SESSION['user_id'] . '" class="watch-btn play-btn">
-                                    <i class="bx bx-right-arrow"></i>
-                                </a>
-                            </div>
-                        </div>';
+            $lst_title = @get_title($keyword);
+            if ($lst_title == false){
+                echo "Không có gợi ý bộ phim nào được tìm thấy.";
+            } else {
+                foreach ($lst_title as $item) {
+                    $item = str_replace("'", "''", $item);
+                    $sql = "SELECT * FROM tmdb_5000_movies WHERE (title = '$item' OR original_title = '$item')";
+                    $result = $connection->query($sql);
+                    if ($result === false) {
+                        echo $connection->error;
+                    }                
+                    elseif ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            $movie_id = $row['id'];
+                            $poster_url = get_movie_image_url($movie_id); // Gọi hàm từ file api_tmdb.php để lấy URL hình ảnh
+                            echo '
+                            <div class="movie-box">
+                                <img src="' . $poster_url . '" alt="" class="movie-box-img">
+                                <div class="box-text">
+                                    <h2 class="movie-title">' . $row['title'] . '</h2>
+                                    <a href="chitietphim.php?id=' . $row['id'] . '&user_id=' . $_SESSION['user_id'] . '" class="watch-btn play-btn">
+                                        <i class="bx bx-right-arrow"></i>
+                                    </a>
+                                </div>
+                            </div>';
+                        }
                     }
                 }
             }
@@ -168,8 +175,6 @@ if (isset($_POST['noidung'])) {
         </div>
     </div>
 </section>
-
-
     <script src="js/main.js"></script>
     <script src="dropdown.js"></script>
 
